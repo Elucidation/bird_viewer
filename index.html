@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Birbcam Events</title>
+    <style>
+        /* Grid container styling */
+        #data-container {
+            display: grid;
+            grid-auto-flow: row;
+            gap: 20px;
+        }
+
+        .entry {
+            text-align: center;
+        }
+
+        .entry img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Birbcam Events</h1>
+    <div id="data-container"></div>
+
+    <script>
+        // Function to format date to month
+        function formatMonth(date) {
+            return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
+        }
+
+        // Function to format date and calculate duration
+        function formatDateAndDuration(startTime, endTime) {
+            const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', timeZoneName: 'short' };
+            const startDate = new Date(startTime * 1000);
+            const endDate = new Date(endTime * 1000);
+            const formattedStartDate = startDate.toLocaleDateString('en-US', options);
+            const duration = endDate - startDate;
+            const minutes = Math.floor(duration / 60000);
+            const seconds = Math.floor((duration % 60000) / 1000);
+            return { formattedStartDate, durationText: `${minutes > 0 ? `${minutes} min ` : ''}${seconds} sec` };
+        }
+
+        // Function to load JSON data and display it
+        function loadData() {
+            months = [];
+            fetch('events1.json')
+                .then(response => response.json())
+                .then(data => {
+
+                    // Group data by date
+                    const groupedData = data.reduce((acc, item) => {
+                        const dateKey = formatMonth(new Date(item.start_time * 1000));
+                        if (!acc[dateKey]) {
+                            acc[dateKey] = [];
+                        }
+                        acc[dateKey].push(item);
+                        return acc;
+                    }, {});
+
+                    // Create a grid for each group
+                    const container = document.getElementById('data-container');
+                    Object.keys(groupedData).forEach(date => {
+                        const dayDiv = document.createElement('div');
+                        dayDiv.innerHTML = `<h2>${date}</h2>`;
+                        container.appendChild(dayDiv);
+
+                        const gridDiv = document.createElement('div');
+                        gridDiv.style.display = 'grid';
+                        gridDiv.style.gridTemplateColumns = 'repeat(auto-fill, minmax(200px, 1fr))';
+                        gridDiv.style.gap = '10px';
+
+                        groupedData[date].forEach(item => {
+                            const { formattedStartDate, durationText } = formatDateAndDuration(item.start_time, item.end_time);
+                            const entryDiv = document.createElement('div');
+                            entryDiv.className = 'entry';
+                            entryDiv.innerHTML = `<img src="data:image/jpeg;base64,${item.thumbnail}" title="${formattedStartDate} - ${durationText}">`;
+                            gridDiv.appendChild(entryDiv);
+                        });
+
+                        container.appendChild(gridDiv);
+                    });
+                })
+                .catch(error => console.error('Error loading JSON:', error));
+        }
+
+        // Load data when the page loads
+        window.addEventListener('load', loadData);
+    </script>
+</body>
+
+</html>
