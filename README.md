@@ -3,6 +3,22 @@
 I have a camera that tracks and captures small crop images of motion objects including birds.
 It sees several types of birds (crows, juncos, finches, sparrows etc.) which I'd like to classify.
 
+![Predictions](predictions.png)
+
+# Classfication Model Training
+
+[Model training ipython notebook](bird_classify.ipynb)
+
+Trained on the [Caltech-UCSD Birds-200-2011 (CUB-200-2011)](https://paperswithcode.com/dataset/cub-200-2011) dataset. It contains 11,788 images of 200 subcategories belonging to birds, 5,994 for training and 5,794 for testing.
+
+We take a MobileNetV2 architecture with the last layer removed, replaced with dropout -> dense(200) -> dropout -> dense(70) for 70 groups of birds.
+
+![model](model.png)
+
+Generally it performs with 80% accuracy on the test dataset.
+
+# Camera events
+
 ```json
 [
     {"area":null,
